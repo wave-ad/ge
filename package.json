@@ -1,0 +1,25 @@
+{
+  "name": "ge",
+  "version": "1.0.0",
+  "description": "AD WAVE",
+  "main": "index.js",
+  "scripts": {
+    "build": "tailwindcss -i ./src/input.css -o ./css/style.css --watch"
+  }, 
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wave-ad/ge.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wave-ad/ge/issues"
+  },
+  "homepage": "https://github.com/wave-ad/ge#readme",
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17"
+  }
+}
