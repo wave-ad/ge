@@ -1,0 +1,13 @@
+/* Basic styles for the website */
+
+body {
+    font-family: sans-serif; /* Use a common sans-serif font */
+    line-height: 1.6;      /* Improve readability */
+    margin: 20px;          /* Add some space around the content */
+    background-color: #f4f4f4; /* Light grey background */
+    color: #333;              /* Dark grey text color */
+}
+
+h1 {
+    color: #0056b3; /* A shade of blue for the main heading */
+}
