@@ -115,15 +115,14 @@
                         </div>
                     <div class="hidden md:block">
                         <div class="ml-10 flex items-baseline space-x-4">
-                            <a href="#map" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Map</a>
-                            <a href="#weather" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Weather/Finance</a>
-                            <a href="#real-estate" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Real Estate</a>
-                            <a href="#cars" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Cars</a>
-                            <a href="#auction" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Auction</a>
-                            </div>
+                            <a href="#" data-target="map-page-content" class="nav-link bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium">Map</a> <a href="#" data-target="weather-page-content" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Weather/Finance</a>
+                            <a href="#" data-target="real-estate-page-content" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Real Estate</a>
+                            <a href="#" data-target="cars-page-content" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Cars</a>
+                            <a href="#" data-target="auction-page-content" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Auction</a>
+                        </div>
                     </div>
                     <div class="-mr-2 flex md:hidden">
-                        <button type="button" id="mobile-menu-button" class="bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+                         <button type="button" id="mobile-menu-button" class="bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
                             <span class="sr-only">Open main menu</span>
                             <svg class="block h-6 w-6" id="menu-icon-closed" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -137,24 +136,50 @@
             </div>
             <div class="md:hidden hidden" id="mobile-menu">
                 <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                    <a href="#map" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Map</a>
-                    <a href="#weather" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Weather/Finance</a>
-                    <a href="#real-estate" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Real Estate</a>
-                    <a href="#cars" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Cars</a>
-                    <a href="#auction" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Auction</a>
+                    <a href="#" data-target="map-page-content" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Map</a>
+                    <a href="#" data-target="weather-page-content" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Weather/Finance</a>
+                    <a href="#" data-target="real-estate-page-content" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Real Estate</a>
+                    <a href="#" data-target="cars-page-content" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Cars</a>
+                    <a href="#" data-target="auction-page-content" class="nav-link text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Auction</a>
                 </div>
             </div>
-        </nav> <main id="page-content" class="p-4 bg-gray-900 text-gray-100"> <h2 class="text-2xl font-semibold text-blue-400 mb-4">Map View</h2>
-            
-            <p class="mb-4">Find directions to ტალღა • wave.</p> 
-            <div id="map-container" class="w-full h-96 bg-gray-700 rounded-lg text-center flex items-center justify-center">
-                Map Placeholder - Integration Needed
+        </nav> <main id="page-content" class="p-4 bg-gray-900 text-gray-100"> <div id="map-page-content" class="page"> 
+                <h2 class="text-2xl font-semibold text-blue-400 mb-4">Map View</h2>
+                <p class="mb-4">Find directions to ტალღა • wave.</p>
+                <div id="map-container" class="w-full h-96 bg-gray-700 rounded-lg text-center flex items-center justify-center">
+                    Map Placeholder - Integration Needed
+                </div>
             </div>
-            </main> </div>
+
+            <div id="weather-page-content" class="page hidden">
+                 <h2 class="text-2xl font-semibold text-blue-400 mb-4">Weather & Finance</h2>
+                 <p>Weather forecast and currency/crypto/commodities rates will appear here.</p>
+                 <div class="mt-4 p-4 bg-gray-800 rounded-lg">Content Placeholder</div>
+            </div>
+
+            <div id="real-estate-page-content" class="page hidden">
+                 <h2 class="text-2xl font-semibold text-blue-400 mb-4">Real Estate</h2>
+                 <p>Listings for rent/sale (apartments, commercial, houses) will appear here.</p>
+                  <div class="mt-4 p-4 bg-gray-800 rounded-lg">Content Placeholder</div>
+            </div>
+
+             <div id="cars-page-content" class="page hidden">
+                 <h2 class="text-2xl font-semibold text-blue-400 mb-4">Cars</h2>
+                 <p>Listings for car sales/rents will appear here.</p>
+                 <div class="mt-4 p-4 bg-gray-800 rounded-lg">Content Placeholder</div>
+            </div>
+
+             <div id="auction-page-content" class="page hidden">
+                 <h2 class="text-2xl font-semibold text-blue-400 mb-4">Auction</h2>
+                 <p>Auction items will appear here.</p>
+                 <div class="mt-4 p-4 bg-gray-800 rounded-lg">Content Placeholder</div>
+            </div>
+
+        </main> </div>
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
 
     <script src="js/script.js"></script>
-</body>
+    </body>
 </html>
