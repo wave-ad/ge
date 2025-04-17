@@ -17,11 +17,11 @@ const firebaseConfig = {
 // Initialize Firebase using the global firebase object (from compat scripts)
 let app;
 let auth;
-let db; // <<< Declare db variable
+let db; // Declare db variable
 try {
   app = firebase.initializeApp(firebaseConfig);
   auth = firebase.auth(); // Initialize Auth service
-  db = firebase.firestore(); // <<< Initialize Firestore service
+  db = firebase.firestore(); // Initialize Firestore service
   console.log("Firebase Initialized Successfully (compat)!");
 } catch (error) {
   console.error("Firebase initialization failed:", error);
@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Get Element References ---
   const splashScreen = document.getElementById('splash-screen');
+  const backgroundLayer = document.getElementById('background-layer');
   const registrationContainer = document.getElementById('main-content');
   const loginContainer = document.getElementById('login-content');
   const appShell = document.getElementById('app-shell');
@@ -45,164 +46,85 @@ document.addEventListener('DOMContentLoaded', () => {
   const regFormMessages = document.getElementById('form-messages');
   const loginFormMessages = document.getElementById('login-form-messages');
 
-  // Links to toggle between login/register
   const showLoginLink = document.getElementById('show-login-link');
   const showRegisterLink = document.getElementById('show-register-link');
 
-  // Navigation Links & Page Content Sections
   const navLinks = document.querySelectorAll('#app-shell .nav-link');
   const pageSections = pageContent ? pageContent.querySelectorAll('.page') : [];
 
 
   // --- Splash Screen Logic ---
-  const animationDuration = 6000; // Set lower (e.g., 100) for faster testing
-  if (splashScreen && registrationContainer) {
+  const animationDuration = 6000; // Adjust for testing if needed
+  if (splashScreen && backgroundLayer && registrationContainer) {
+    console.log(`Setting timeout for splash removal/transition (${animationDuration}ms)`);
     setTimeout(() => {
+      console.log("TIMEOUT REACHED: Hiding splash, showing background & initial form.");
       splashScreen.classList.add('hidden');
+      backgroundLayer.classList.remove('hidden', 'opacity-0');
+      backgroundLayer.classList.add('fade-in');
+      // Show registration form by default after splash
       registrationContainer.classList.remove('hidden');
+      console.log("Splash hidden, background faded in started, registration form shown.");
     }, animationDuration);
-  } else { /* error log */ }
+  } else { console.error('Error: Could not find splash screen, background layer, or main content element!'); }
 
   // --- Helper Functions for Validation Styling ---
-  function setError(inputElement, message) { /* ... same as before ... */ if(!inputElement.classList.contains('border-red-500')){console.log(`--> Setting error style for: ${inputElement.id}`);} inputElement.classList.remove('border-gray-600','focus:ring-blue-500'); inputElement.classList.add('border-red-500','focus:ring-red-500'); }
-  function clearError(inputElement) { /* ... same as before ... */ if(inputElement.classList.contains('border-red-500')){console.log(`--> Clearing error style for: ${inputElement.id}`); inputElement.classList.remove('border-red-500','focus:ring-red-500'); inputElement.classList.add('border-gray-600','focus:ring-blue-500');}}
+  function setError(inputElement, message) { if(!inputElement.classList.contains('border-red-500')){console.log(`--> Setting error style for: ${inputElement.id}`);} inputElement.classList.remove('border-gray-600','focus:ring-blue-500'); inputElement.classList.add('border-red-500','focus:ring-red-500'); }
+  function clearError(inputElement) { if(inputElement.classList.contains('border-red-500')){console.log(`--> Clearing error style for: ${inputElement.id}`); inputElement.classList.remove('border-red-500','focus:ring-red-500'); inputElement.classList.add('border-gray-600','focus:ring-blue-500');}}
 
   // --- Registration Form Logic ---
-  if (registrationForm && auth && db) { // Check for db too
-    const regRequiredInputs = registrationForm.querySelectorAll('input[required]');
-    const regPasswordInput = document.getElementById('password');
-    const regPasswordConfirmInput = document.getElementById('password_confirm');
-
-    registrationForm.addEventListener('submit', (event) => {
-      console.log("--- Registration Form submit event triggered ---");
-      event.preventDefault();
-      let errors = [];
-      regFormMessages.textContent = '';
-      regFormMessages.classList.remove('text-red-400', 'text-green-400', 'text-yellow-500');
-      console.log("Clearing previous registration errors...");
-      regRequiredInputs.forEach(clearError);
-
-      // Visual Validation Checks (same as before)
-      // ... (empty field checks, password match checks) ...
-        console.log("Checking required fields..."); 
-        regRequiredInputs.forEach(input => { if (input.value.trim() === '') {const label = document.querySelector(`label[for='${input.id}']`); errors.push(`${label?.textContent || input.name || input.id} is required.`); setError(input, 'Required');}});
-        console.log("Checking password match..."); if (regPasswordInput && regPasswordConfirmInput && regPasswordInput.value && regPasswordConfirmInput.value) { if (regPasswordInput.value !== regPasswordConfirmInput.value) { errors.push('Passwords do not match.'); setError(regPasswordInput, 'Mismatch'); setError(regPasswordConfirmInput, 'Mismatch');}} else if (regPasswordInput?.value && !regPasswordConfirmInput?.value) { errors.push(`Confirm Password is required.`); setError(regPasswordConfirmInput, 'Required');}
-        
-      if (errors.length > 0) {
-        regFormMessages.textContent = errors.join(' ');
-        regFormMessages.classList.add('text-red-400');
-        console.log(`   Errors found: ${errors.length}`);
-        console.log("--- Registration submit handler finished (validation errors) ---");
-        return; 
-      }
-
-      // --- If validation passes, attempt Firebase registration & Firestore write ---
-      console.log("Validation successful. Attempting Firebase registration...");
-      regFormMessages.textContent = 'Processing registration...';
-      regFormMessages.classList.remove('text-red-400', 'text-green-400', 'text-yellow-500');
-
-      // Get all form values
-      const email = document.getElementById('email').value;
-      const password = regPasswordInput.value;
-      const username = document.getElementById('username').value;
-      const firstName = document.getElementById('first_name').value;
-      const lastName = document.getElementById('last_name').value;
-      const phone = document.getElementById('phone').value;
-
-      // 1. Create user in Firebase Authentication
-      auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          console.log('Firebase user created successfully:', user.uid, 'Email verified:', user.emailVerified);
-
-          // 2. Save additional user info to Firestore
-          console.log('Attempting to save user details to Firestore...');
-          const userData = {
-              username: username,
-              firstName: firstName,
-              lastName: lastName,
-              email: email, // Store email here too for convenience
-              phone: phone,
-              createdAt: firebase.firestore.FieldValue.serverTimestamp() // Record creation time
-              // Add wallet info structure here later if needed
-          };
-
-          // Use user.uid as the document ID in the 'users' collection
-          db.collection("users").doc(user.uid).set(userData)
-            .then(() => {
-                console.log("User data successfully written to Firestore!");
-
-                // 3. Send verification email (after data saved or concurrently)
-                user.sendEmailVerification()
-                  .then(() => {
-                    console.log('Verification email sending initiated.');
-                    regFormMessages.textContent = 'Registration successful! User data saved. Please check your email (' + email + ') for a verification link.';
-                    regFormMessages.classList.add('text-green-400');
-                    registrationForm.reset(); // Clear the form on complete success
-                  })
-                  .catch((error) => {
-                     console.error("Error sending verification email:", error);
-                     regFormMessages.textContent = 'Registration successful & data saved, but failed to send verification email.';
-                     regFormMessages.classList.add('text-yellow-500');
-                  });
-            })
-            .catch((error) => {
-                console.error("Error writing user data to Firestore:", error);
-                // Decide how to handle this - user exists in Auth but not Firestore
-                // Might want to delete the auth user or prompt retry? For now, show error.
-                regFormMessages.textContent = 'User account created, but failed to save profile data. Please contact support.';
-                regFormMessages.classList.add('text-red-400');
-                // Potentially delete the auth user if data saving fails critically?
-                // user.delete().catch(delErr => console.error("Failed to delete auth user after firestore error", delErr));
-            });
-
-        })
-        .catch((error) => {
-          // Handle Firebase Authentication registration errors
-          console.error("Firebase registration failed:", error.code, error.message);
-          let errorMessage = `Registration failed: ${error.message}`;
-          // ... (same specific error message handling as before) ...
-           if (error.code === 'auth/email-already-in-use') {errorMessage = 'Registration failed: This email address is already registered.'; setError(document.getElementById('email'), 'In use');} else if (error.code === 'auth/weak-password') { errorMessage = 'Registration failed: Password should be at least 6 characters long.'; setError(passwordInput, 'Too weak'); } else if (error.code === 'auth/invalid-email') { errorMessage = 'Registration failed: The email address is not valid.'; setError(document.getElementById('email'), 'Invalid'); }
-          regFormMessages.textContent = errorMessage;
-          regFormMessages.classList.add('text-red-400');
-        });
-
-      console.log("--- Registration submit handler finished (Firebase call initiated) ---");
-    });
-  } else { /* Error logging */ }
+  if (registrationForm && auth && db) {
+      const regRequiredInputs = registrationForm.querySelectorAll('input[required]'); const regPasswordInput = document.getElementById('password'); const regPasswordConfirmInput = document.getElementById('password_confirm'); registrationForm.addEventListener('submit', (event) => { /* ... Full registration logic ... */ event.preventDefault(); let errors = []; regFormMessages.textContent = ''; regFormMessages.classList.remove('text-red-400', 'text-green-400', 'text-yellow-500'); regRequiredInputs.forEach(clearError); regRequiredInputs.forEach(input => { if (input.value.trim() === '') {const label = document.querySelector(`label[for='${input.id}']`); errors.push(`${label?.textContent || input.name || input.id} is required.`); setError(input, 'Required');}}); if (regPasswordInput && regPasswordConfirmInput && regPasswordInput.value && regPasswordConfirmInput.value) { if (regPasswordInput.value !== regPasswordConfirmInput.value) { errors.push('Passwords do not match.'); setError(regPasswordInput, 'Mismatch'); setError(regPasswordConfirmInput, 'Mismatch');}} else if (regPasswordInput?.value && !regPasswordConfirmInput?.value) { errors.push(`Confirm Password is required.`); setError(regPasswordConfirmInput, 'Required');} if (errors.length > 0) { regFormMessages.textContent = errors.join(' '); regFormMessages.classList.add('text-red-400'); return; } const email = document.getElementById('email').value; const password = regPasswordInput.value; const username = document.getElementById('username').value; const firstName = document.getElementById('first_name').value; const lastName = document.getElementById('last_name').value; const phone = document.getElementById('phone').value; regFormMessages.textContent = 'Processing registration...'; auth.createUserWithEmailAndPassword(email, password) .then((userCredential) => { const user = userCredential.user; const userData = { username: username, firstName: firstName, lastName: lastName, email: email, phone: phone, createdAt: firebase.firestore.FieldValue.serverTimestamp() }; db.collection("users").doc(user.uid).set(userData) .then(() => { user.sendEmailVerification() .then(() => { regFormMessages.textContent = 'Registration successful! Please check your email (' + email + ') for a verification link.'; regFormMessages.classList.add('text-green-400'); registrationForm.reset(); }) .catch((error) => { regFormMessages.textContent = 'Registration successful & data saved, but failed to send verification email.'; regFormMessages.classList.add('text-yellow-500'); }); }) .catch((error) => { regFormMessages.textContent = 'User account created, but failed to save profile data.'; regFormMessages.classList.add('text-red-400'); }); }) .catch((error) => { let errorMessage = `Registration failed: ${error.message}`; if (error.code === 'auth/email-already-in-use') {errorMessage = 'Registration failed: This email address is already registered.'; setError(document.getElementById('email'), 'In use');} else if (error.code === 'auth/weak-password') { errorMessage = 'Registration failed: Password should be at least 6 characters long.'; setError(regPasswordInput, 'Too weak'); } else if (error.code === 'auth/invalid-email') { errorMessage = 'Registration failed: The email address is not valid.'; setError(document.getElementById('email'), 'Invalid'); } regFormMessages.textContent = errorMessage; regFormMessages.classList.add('text-red-400'); }); });
+  } else { console.error("Registration form or Firebase services not ready."); }
 
 
   // --- Login Form Logic ---
-  if (loginForm && auth && db) { // Check for db too
+  if (loginForm && auth) { 
       const loginEmailInput = document.getElementById('login-email');
       const loginPasswordInput = document.getElementById('login-password');
-      loginForm.addEventListener('submit', (event) => { /* ... same login logic as before ... */
-            console.log("--- Login Form submit event triggered ---"); event.preventDefault(); loginFormMessages.textContent = 'Processing login...'; loginFormMessages.classList.remove('text-red-400','text-green-400','text-yellow-500'); clearError(loginEmailInput); clearError(loginPasswordInput);
-            const email = loginEmailInput.value; const password = loginPasswordInput.value;
-            let loginErrors = []; if(email.trim()===''){loginErrors.push('Email is required.');setError(loginEmailInput);} if(password.trim()===''){loginErrors.push('Password is required.');setError(loginPasswordInput);} if(loginErrors.length > 0){loginFormMessages.textContent=loginErrors.join(' ');loginFormMessages.classList.add('text-red-400');console.log("Login validation errors found."); return;}
-            auth.signInWithEmailAndPassword(email, password)
-              .then((userCredential) => { const user = userCredential.user; console.log('Login successful:', user.uid,'Email verified:', user.emailVerified);
-                  if (user.emailVerified) { console.log('Email IS verified. Showing app shell.'); loginFormMessages.textContent = 'Login successful!'; loginFormMessages.classList.add('text-green-400'); if(loginContainer) loginContainer.classList.add('hidden'); if(registrationContainer) registrationContainer.classList.add('hidden'); if(appShell) appShell.classList.remove('hidden');} 
-                  else { console.log('Email NOT verified. Please check email.'); loginFormMessages.textContent = 'Please verify your email address first. Check your inbox (and spam folder) for the verification link.'; loginFormMessages.classList.add('text-yellow-500'); auth.signOut(); console.log('User signed out as email is not verified.');}
-              })
-              .catch((error) => { console.error("Login failed:", error.code, error.message); let loginErrorMessage=`Login failed: ${error.message}`; if(error.code === 'auth/user-not-found'||error.code === 'auth/wrong-password'||error.code === 'auth/invalid-credential'){loginErrorMessage='Login failed: Invalid email or password.';setError(loginEmailInput);setError(loginPasswordInput);} else if(error.code==='auth/invalid-email'){loginErrorMessage='Login failed: Please enter a valid email address.';setError(loginEmailInput);} loginFormMessages.textContent=loginErrorMessage;loginFormMessages.classList.add('text-red-400'); });
-           console.log("--- Login submit handler finished ---");
+      loginForm.addEventListener('submit', (event) => {
+           console.log("--- Login Form submit event triggered ---"); event.preventDefault(); loginFormMessages.textContent = 'Processing login...'; loginFormMessages.classList.remove('text-red-400','text-green-400','text-yellow-500'); clearError(loginEmailInput); clearError(loginPasswordInput);
+           const email = loginEmailInput.value; const password = loginPasswordInput.value;
+           let loginErrors = []; if(email.trim()===''){loginErrors.push('Email is required.');setError(loginEmailInput);} if(password.trim()===''){loginErrors.push('Password is required.');setError(loginPasswordInput);} if(loginErrors.length > 0){loginFormMessages.textContent=loginErrors.join(' '); loginFormMessages.classList.add('text-red-400'); return;}
+
+           auth.signInWithEmailAndPassword(email, password)
+             .then((userCredential) => {
+                 const user = userCredential.user;
+                 console.log('Login successful:', user.uid, 'Email verified:', user.emailVerified);
+
+                 if (user.emailVerified) {
+                     console.log('Email IS verified. Showing app shell.');
+                     loginFormMessages.textContent = 'Login successful!'; 
+                     loginFormMessages.classList.add('text-green-400'); 
+
+                     // --- UNCOMMENTED THESE LINES ---
+                     console.log('Attempting to hide forms and show app shell...'); 
+                     if(loginContainer) loginContainer.classList.add('hidden');
+                     if(registrationContainer) registrationContainer.classList.add('hidden'); 
+                     if(appShell) appShell.classList.remove('hidden');
+                     // --- END UNCOMMENTED ---
+                     // console.log('App shell display temporarily disabled for testing.'); // Removed test log
+
+                 } else {
+                     console.log('Email NOT verified. Please check email.');
+                     loginFormMessages.textContent = 'Please verify your email address first. Check your inbox (and spam folder) for the verification link.';
+                     loginFormMessages.classList.add('text-yellow-500');
+                     auth.signOut();
+                     console.log('User signed out as email is not verified.');
+                 }
+             })
+             .catch((error) => { /* ... same login error handling ... */ console.error("Login failed:", error.code, error.message); let loginErrorMessage=`Login failed: ${error.message}`; if(error.code === 'auth/user-not-found'||error.code === 'auth/wrong-password'||error.code === 'auth/invalid-credential'){loginErrorMessage='Login failed: Invalid email or password.';setError(loginEmailInput);setError(loginPasswordInput);} else if(error.code==='auth/invalid-email'){loginErrorMessage='Login failed: Please enter a valid email address.';setError(loginEmailInput);} loginFormMessages.textContent=loginErrorMessage;loginFormMessages.classList.add('text-red-400'); });
+          console.log("--- Login submit handler finished ---");
       });
-  } else { /* Error logging */ }
+  } else { console.error("Login form or Firebase Auth service not ready."); }
 
   // --- Logic to toggle between Register and Login forms ---
-  if (showLoginLink && showRegisterLink && registrationContainer && loginContainer) { /* ... same toggle logic ... */ 
-        showLoginLink.addEventListener('click',(e)=>{e.preventDefault();registrationContainer.classList.add('hidden');loginContainer.classList.remove('hidden');}); showRegisterLink.addEventListener('click',(e)=>{e.preventDefault();loginContainer.classList.add('hidden');registrationContainer.classList.remove('hidden');});
-  }
+  if (showLoginLink && showRegisterLink && registrationContainer && loginContainer) { /* ... same toggle logic ... */ showLoginLink.addEventListener('click',(e)=>{e.preventDefault();registrationContainer.classList.add('hidden');loginContainer.classList.remove('hidden');}); showRegisterLink.addEventListener('click',(e)=>{e.preventDefault();loginContainer.classList.add('hidden');registrationContainer.classList.remove('hidden');});}
 
   // --- Page Switching Logic for Nav Links ---
-  if (navLinks.length > 0 && pageSections.length > 0) { /* ... same page switching logic ... */ 
-        function switchPage(targetId){console.log(`Switching to page: ${targetId}`); pageSections.forEach(section=>{section.classList.add('hidden');}); const targetPage=document.getElementById(targetId); if(targetPage){targetPage.classList.remove('hidden');} else {console.error(`Target page section with ID '${targetId}' not found!`);} navLinks.forEach(link=>{link.classList.remove('bg-gray-900','text-white'); link.classList.add('text-gray-300','hover:bg-gray-700','hover:text-white'); if(link.getAttribute('data-target')===targetId){link.classList.remove('text-gray-300','hover:bg-gray-700','hover:text-white'); link.classList.add('bg-gray-900','text-white');}});}
-        navLinks.forEach(link=>{link.addEventListener('click',(event)=>{event.preventDefault(); const targetPageId=link.getAttribute('data-target'); if(targetPageId){switchPage(targetPageId);}});});
-  } else { /* Warn if elements missing */ }
+  if (navLinks.length > 0 && pageSections.length > 0) { /* ... same page switching logic ... */ function switchPage(targetId){console.log(`Switching to page: ${targetId}`); pageSections.forEach(section=>{section.classList.add('hidden');}); const targetPage=document.getElementById(targetId); if(targetPage){targetPage.classList.remove('hidden');} else {console.error(`Target page section with ID '${targetId}' not found!`);} navLinks.forEach(link=>{link.classList.remove('bg-indigo-100','text-indigo-700'); link.classList.add('text-gray-500','hover:bg-gray-200','hover:text-gray-900'); if(link.getAttribute('data-target')===targetId){link.classList.remove('text-gray-500','hover:bg-gray-200','hover:text-gray-900'); link.classList.add('bg-indigo-100','text-indigo-700');}});} navLinks.forEach(link=>{link.addEventListener('click',(event)=>{event.preventDefault(); const targetPageId=link.getAttribute('data-target'); if(targetPageId){switchPage(targetPageId);}});}); switchPage('map-page-content'); /* Initialize map view and link style */ } else { console.warn("Could not find navigation links or page sections to set up page switching."); }
 
   // --- Mobile Menu Toggle Logic ---
-  const mobileMenuButton = document.getElementById('mobile-menu-button'); /* ... same mobile toggle logic ... */
-  const mobileMenu = document.getElementById('mobile-menu'); const menuIconClosed = document.getElementById('menu-icon-closed'); const menuIconOpen = document.getElementById('menu-icon-open'); if(mobileMenuButton&&mobileMenu&&menuIconClosed&&menuIconOpen){mobileMenuButton.addEventListener('click',()=>{mobileMenu.classList.toggle('hidden');menuIconClosed.classList.toggle('hidden');menuIconOpen.classList.toggle('hidden');});} else { console.warn("Could not find mobile menu elements."); }
+  const mobileMenuButton = document.getElementById('mobile-menu-button'); const mobileMenu = document.getElementById('mobile-menu'); const menuIconClosed = document.getElementById('menu-icon-closed'); const menuIconOpen = document.getElementById('menu-icon-open'); if(mobileMenuButton&&mobileMenu&&menuIconClosed&&menuIconOpen){mobileMenuButton.addEventListener('click',()=>{mobileMenu.classList.toggle('hidden');menuIconClosed.classList.toggle('hidden');menuIconOpen.classList.toggle('hidden');});} else { console.warn("Could not find mobile menu elements."); }
 
 }); // End of DOMContentLoaded listener
